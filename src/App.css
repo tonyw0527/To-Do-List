@@ -110,11 +110,32 @@
   font-size: large;
 }
 
-.Item textarea {
+.Item button {
+  border: 1px solid black;
+  border-radius: 10px;
+  background-color: rgba(245, 222, 179, 1);
+  transform: translateY(-10%);
+  font-size: x-small;
+}
+
+.textarea-default {
+  display: block;
   background-color: wheat;
   width: 100%;
-  height: 70%;
+  height: 80%;
   border-style: none;
   color: black;
   font-size: large;
+  resize: none;
+}
+
+.textarea-edit {
+  display: block;
+  background-color: wheat;
+  width: 100%;
+  height: 80%;
+  color: red;
+  font-size: large;
+  resize: none;
+  border-style: solid;
 }

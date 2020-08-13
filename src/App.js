@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { createRef } from 'react';
 import './App.css';
 
 /*
@@ -10,17 +10,67 @@ import './App.css';
 */
 
 class Item extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      isDisabled: true,
+      textareaClassName: 'textarea-default',
+      value: this.props.content
+    }
+    this.refTextArea = React.createRef();
+  }
+
+  componentDidUpdate() {
+    if(!this.state.isDisabled) {
+      console.log(this.refTextArea.current);
+      this.refTextArea.current.focus();
+    }
+  }
+
+  handleSaveContent = (e) => {
+    this.setState({
+      value: e.target.value
+    });
+  }
+
+  handleEditButton = (e) => {
+    let flag;
+    flag = this.state.isDisabled ? false : true;
+    let className = flag ? 'textarea-default' : 'textarea-edit';
+    
+    this.setState({
+      isDisabled: flag,
+      textareaClassName: className
+    });
+  }
+
+  handleEditEnter = (e) => {
+    if(e.key === 'Enter') {
+      let flag = this.state.isDisabled ? false : true;
+      let className = flag ? 'textarea-default' : 'textarea-edit';
+      this.setState({
+        isDisabled: flag,
+        textareaClassName: className
+      });
+    }
+  }
+
   render() {
     const {title, content} = this.props;
+    const {isDisabled, textareaClassName, value} = this.state;
 
     return (
         <div className="Item">
           <label>
             <input type="checkbox" />
-            &nbsp;{title}
+            &nbsp;{title}&nbsp;
           </label>
-          <textarea disabled>{content}</textarea>
-        </div>      
+          <button type="button" onClick={this.handleEditButton} >
+            {isDisabled ? 'Edit' : 'Done'}
+          </button>
+          <textarea className={textareaClassName} spellcheck="false" ref={this.refTextArea} value={value} onChange={this.handleSaveContent} disabled={isDisabled}
+           onKeyPress={this.handleEditEnter} onFocus={(e) => {const val = e.target.value; e.target.value = ''; e.target.value = val;}} ></textarea>
+        </div>
     );
   }
 }
@@ -70,11 +120,20 @@ class FilterBar extends React.Component {
 }
 
 class InputTextBar extends React.Component {
+  constructor(props) {
+    super(props);
+    this.refInput = React.createRef();
+  }
+
+  componentDidMount() {
+    this.refInput.current.focus();
+  }
 
   handleInputEnter = (e) => {
     if(e.key === 'Enter') {
       const item = {title: e.target.value, content: '내용을 입력하세요..', done: false};
       this.props.onHandleAddItem(item);
+      this.refInput.current.value = '';
     }
   }
 
@@ -83,7 +142,7 @@ class InputTextBar extends React.Component {
       <div className="InputTextBar">
         <h1>TODO LIST</h1>
         <strong>React Development by&nbsp;<span>@tonyw</span></strong>
-        <input type="text" placeholder="Enter a new task" onKeyPress={this.handleInputEnter}/>
+        <input type="text" ref={this.refInput} placeholder="Enter a new task" onKeyPress={this.handleInputEnter}/>
       </div>
     );
   }
@@ -102,6 +161,8 @@ class App extends React.Component {
       ]
     };
   }
+
+
 
   handleAddItem = (item) => {
     let newData = this.state.data;
