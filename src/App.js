@@ -84,11 +84,14 @@ class Item extends React.Component {
 class ItemBox extends React.Component {
 
   render() {
-    const data = this.props.data;
+    const {data, categoryFilter, searchFilter} = this.props;
     let items = [];
+
+    console.log(categoryFilter, searchFilter);
+
     
     data.forEach((item, index) => {
-      items.push(<Item key={index} id={index} title={item.title} content={item.content} done={item.done} onHandleEditItem={this.props.onHandleEditItem} />);
+      items.unshift(<Item key={index} id={index} title={item.title} content={item.content} done={item.done} onHandleEditItem={this.props.onHandleEditItem} />);
     });
 
     return (
@@ -100,23 +103,42 @@ class ItemBox extends React.Component {
 }
 
 class FilterBar extends React.Component {
+  constructor(props) {
+    super(props);
+    this.refFilterInput = createRef();
+  }
   
+  handleCategoryFilter = (e) => {
+    this.props.onHandleCategoryFilter(e.target.value);
+  }
+
+  handleSearchFilter = (e) => {
+    this.props.onHandleSearchFilter(e.target.value);
+  }
+
+  handleInputEnter = (e) => {
+    if(e.key === 'Enter') {
+      this.refFilterInput.current.value = '';
+    }
+  }
+
   render() {
     return (
       <div className="FilterBar">
         <div className="FilterBar-left">
           <label>
             View tasks
-            <select>
-              <option>Started</option>
-              <option>Finished</option>
+            <select value={this.props.categoryFilter} onChange={this.handleCategoryFilter}>
+              <option value='All'>All</option>
+              <option value='Started'>Started</option>
+              <option value='Finished'>Finished</option>
             </select>
           </label>
         </div>
         <div className="FilterBar-right">
           <label>
             Search for a tasks
-            <input type="text" />
+            <input type="text" value={this.props.searchFilter} onChange={this.handleSearchFilter} onKeyPress={this.handleInputEnter} ref={this.refFilterInput} />
           </label>
         </div>
       </div>
@@ -157,6 +179,8 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      categoryFilter: 'all',
+      searchFilter: '',
       data: [
         {title: '밥 짓기', content: '창고에서 쌀 한 가마니 가져오면 됨.', done: false},
         {title: '리액트 공부하기', content: '구름EDU의 리액트 강의 3강 끝내기', done: false},
@@ -165,6 +189,18 @@ class App extends React.Component {
         {title: '빨래하기', content: '귀찮...', done: false}
       ]
     };
+  }
+
+  handleCategoryFilter = (filter) => {
+    this.setState({
+      categoryFilter: filter
+    });
+  }
+
+  handleSearchFilter = (filter) => {
+    this.setState({
+      searchFilter: filter
+    });
   }
 
   handleEditItem = (content, done, index) => {
@@ -179,7 +215,7 @@ class App extends React.Component {
 
   handleAddItem = (item) => {
     let newData = this.state.data;
-    newData.unshift(item);
+    newData.push(item);
 
     this.setState({
       data: newData
@@ -187,11 +223,15 @@ class App extends React.Component {
   }
 
   render() {
+    const {categoryFilter, searchFilter} = this.state;
+
     return (
       <div className="App">
         <InputTextBar onHandleAddItem={this.handleAddItem} />
-        <FilterBar />
-        <ItemBox data={this.state.data} onHandleEditItem={this.handleEditItem} />
+        <FilterBar categoryFilter={this.state.categoryFilter} searchFilter={this.state.searchFilter}
+          onHandleCategoryFilter={this.handleCategoryFilter} onHandleSearchFilter={this.handleSearchFilter} />
+        <ItemBox categoryFilter={categoryFilter} searchFilter={searchFilter}
+          data={this.state.data} onHandleEditItem={this.handleEditItem} />
       </div>
     );
   }
