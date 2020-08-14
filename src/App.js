@@ -17,7 +17,7 @@ class Item extends React.Component {
       textareaClassName: 'textarea-default',
       value: this.props.content
     }
-    this.refTextArea = React.createRef();
+    this.refTextArea = createRef();
   }
 
   componentDidUpdate() {
@@ -27,10 +27,15 @@ class Item extends React.Component {
     }
   }
 
+  handleSaveDone = (e) => {
+    this.props.onHandleEditItem(this.state.value, e.target.checked, this.props.id);
+  }
+
   handleSaveContent = (e) => {
     this.setState({
       value: e.target.value
     });
+    this.props.onHandleEditItem(e.target.value, this.props.done, this.props.id);
   }
 
   handleEditButton = (e) => {
@@ -56,20 +61,21 @@ class Item extends React.Component {
   }
 
   render() {
-    const {title, content} = this.props;
+    const {title} = this.props;
     const {isDisabled, textareaClassName, value} = this.state;
 
     return (
         <div className="Item">
           <label>
-            <input type="checkbox" />
+            <input type="checkbox" checked={this.props.done} onChange={this.handleSaveDone} />
             &nbsp;{title}&nbsp;
           </label>
           <button type="button" onClick={this.handleEditButton} >
             {isDisabled ? 'Edit' : 'Done'}
           </button>
-          <textarea className={textareaClassName} spellcheck="false" ref={this.refTextArea} value={value} onChange={this.handleSaveContent} disabled={isDisabled}
-           onKeyPress={this.handleEditEnter} onFocus={(e) => {const val = e.target.value; e.target.value = ''; e.target.value = val;}} ></textarea>
+          <textarea className={textareaClassName} spellCheck="false" ref={this.refTextArea} value={value}
+             onChange={this.handleSaveContent} disabled={isDisabled} onKeyPress={this.handleEditEnter}
+             onFocus={(e) => {const val = e.target.value; e.target.value = ''; e.target.value = val;}} ></textarea>
         </div>
     );
   }
@@ -78,12 +84,11 @@ class Item extends React.Component {
 class ItemBox extends React.Component {
 
   render() {
-    console.log('랜더링');
     const data = this.props.data;
     let items = [];
     
     data.forEach((item, index) => {
-      items.push(<Item key={index} id={index} title={item.title} content={item.content} />);
+      items.push(<Item key={index} id={index} title={item.title} content={item.content} done={item.done} onHandleEditItem={this.props.onHandleEditItem} />);
     });
 
     return (
@@ -162,11 +167,19 @@ class App extends React.Component {
     };
   }
 
+  handleEditItem = (content, done, index) => {
+    let newData = this.state.data;
+    newData[index].content = content;
+    newData[index].done = done;
 
+    this.setState({
+      data: newData
+    });
+  }
 
   handleAddItem = (item) => {
     let newData = this.state.data;
-    newData.push(item);
+    newData.unshift(item);
 
     this.setState({
       data: newData
@@ -178,7 +191,7 @@ class App extends React.Component {
       <div className="App">
         <InputTextBar onHandleAddItem={this.handleAddItem} />
         <FilterBar />
-        <ItemBox data={this.state.data} />
+        <ItemBox data={this.state.data} onHandleEditItem={this.handleEditItem} />
       </div>
     );
   }
